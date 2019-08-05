@@ -20,7 +20,7 @@ describe("module", () => {
       .expect("code", 0)
       .end((err) => {
         expect(err).toBeDefined();
-        expect(err.name).toMatch("[ERR_ASSERTION]");
+        expect(err.name).toMatch("AssertionError");
         done();
       });
   });
@@ -144,7 +144,7 @@ describe("module", () => {
     }).expect("stdout", "no write")
       .end();
     return expect(p).rejects.toMatchObject({
-      name: "AssertionError [ERR_ASSERTION]",
+      name: /AssertionError/,
     });
   });
 
