@@ -2,7 +2,8 @@ import * as cp from "child_process";
 import { EventEmitter } from "events";
 
 import runPrompts, { IPrompt } from "./prompts";
-import RuleError from "./rules/ruleError";
+
+import { ErrorRule, Rule } from "./rules";
 
 type AssertionType = "stdout" | "stderr" | "code" | "error";
 
@@ -91,7 +92,7 @@ export default class Process extends EventEmitter {
    */
   private rulesMap = {
     code: Rule,
-    error: RuleError,
+    error: ErrorRule,
     stderr: Rule,
     stdout: Rule,
   };
@@ -108,7 +109,7 @@ export default class Process extends EventEmitter {
     // Only accept these type below for assertion
     this.rulesMap = {
       code: Rule,
-      error: RuleError,
+      error: ErrorRule,
       stderr: Rule,
       stdout: Rule,
     };
