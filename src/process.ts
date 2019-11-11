@@ -1,7 +1,7 @@
 import * as cp from "child_process";
 import { EventEmitter } from "events";
 
-import Rule from "./rules/rule";
+import runPrompts, { IPrompt } from "./prompts";
 import RuleError from "./rules/ruleError";
 
 type AssertionType = "stdout" | "stderr" | "code" | "error";
@@ -83,6 +83,8 @@ export default class Process extends EventEmitter {
 
   private debugStdout: boolean = false;
   private debugStderr: boolean = false;
+
+  private prompts: IPrompt[] = null;
 
   /**
    * Process assertion rules map
@@ -174,6 +176,11 @@ export default class Process extends EventEmitter {
     return this;
   }
 
+  public prompt(input: IPrompt | IPrompt[]) {
+    this.prompts = [].concat(input);
+    return this;
+  }
+
   /**
    * Callback used to determine when a process is ready
    * useful to close keep-alive style process manually
@@ -241,7 +248,9 @@ export default class Process extends EventEmitter {
     proc.once("error", this.emit.bind(this, "error"));
     proc.once("close", this.emit.bind(this, "close"));
 
-    if (this.stdin.length) {
+    if (this.prompts) {
+      runPrompts(proc, this.prompts);
+    } else if (this.stdin.length) {
       this.stdin.forEach((buf) => proc.stdin.write(buf));
       proc.stdin.end();
     } else {
