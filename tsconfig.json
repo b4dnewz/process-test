@@ -1,5 +1,7 @@
 {
   "compilerOptions": {
+    "module": "commonjs",
+    "moduleResolution": "node",
     "target": "es5",
     "outDir": "./lib",
     "rootDir": "./src",
@@ -7,5 +9,10 @@
   },
   "include": [
     "./src/**/*.ts"
-  ]
+  ],
+  "typedocOptions": {
+    "mode": "file",
+    "out": "docs",
+    "readme": "none"
+  }
 }
