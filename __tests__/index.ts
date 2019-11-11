@@ -148,6 +148,17 @@ describe("module", () => {
     });
   });
 
+  it("should respond to prompt questions", (done) => {
+    const p = new Process({
+      cmd: path.resolve(fixtures, "prompt.js"),
+      method: "fork",
+    }).prompt({
+      question: "Are you waiting?",
+      answer: "yes",
+    }).expect("stdout", "Are you waiting? yes\n")
+      .end(done);
+  });
+
   describe("fork", () => {
     it("should work with first argument only", (done) => {
       fork(path.resolve(fixtures, "stdout-stderr.js"))
