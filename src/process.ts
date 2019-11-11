@@ -1,8 +1,8 @@
 import * as cp from "child_process";
 import { EventEmitter } from "events";
 
-import Rule from "./rule";
-import RuleError from "./ruleError";
+import Rule from "./rules/rule";
+import RuleError from "./rules/ruleError";
 
 type AssertionType = "stdout" | "stderr" | "code" | "error";
 
@@ -12,18 +12,20 @@ type Expectation = ExpectationType | ExpectationType[];
 
 type ReadyCallback = (this: Process, done: () => void) => void;
 
-type ProcessType = "fork" | "spawn";
+export type ProcessType = "fork" | "spawn";
 
-type ProcessCallback = (this: Process, err: Error, res?: IProcessResult) => void;
+export type ProcessCallback = (this: Process, err: Error, res?: IProcessResult) => void;
 
-interface IProcessOptions {
+export type ProcessOptions = cp.ForkOptions | cp.SpawnOptions;
+
+export interface IProcessConstructor {
   method: ProcessType;
   cmd: string;
   args?: string[];
-  options?: cp.ForkOptions;
+  options?: ProcessOptions;
 }
 
-interface IProcessResult {
+export interface IProcessResult {
   code: number;
   error: string | Error;
   stderr: string;
@@ -64,7 +66,7 @@ export default class Process extends EventEmitter {
   /**
    * Options passed to the process
    */
-  private readonly options: any;
+  private readonly options: ProcessOptions;
 
   private readyCb: ReadyCallback;
   private endCb: ProcessCallback;
@@ -92,7 +94,7 @@ export default class Process extends EventEmitter {
     stdout: Rule,
   };
 
-  constructor(opts: IProcessOptions) {
+  constructor(opts: IProcessConstructor) {
     super();
     const { method, cmd, args, options = {} } = opts;
 
@@ -190,8 +192,8 @@ export default class Process extends EventEmitter {
     this.endCb = cb && cb.bind(this);
     if (!cb) {
       return new Promise((resolve, reject) => {
-        this.on("complete_success", resolve);
-        this.on("complete_error", reject);
+        this.on("complete:success", resolve);
+        this.on("complete:error", reject);
       });
     }
   }
@@ -222,18 +224,18 @@ export default class Process extends EventEmitter {
   private run() {
     const { method, cmd, args = [], options = {} } = this;
     if (method === "fork") {
-      options.silent = true;
+      (options as cp.ForkOptions).silent = true;
     }
 
     const handler = cp[method];
     const proc = handler(cmd, args, options);
 
     if (proc.stdout) {
-      proc.stdout.on("data", this.emit.bind(this, "stdout_data"));
+      proc.stdout.on("data", this.emit.bind(this, "stdout:data"));
     }
 
     if (proc.stderr) {
-      proc.stderr.on("data", this.emit.bind(this, "stderr_data"));
+      proc.stderr.on("data", this.emit.bind(this, "stderr:data"));
     }
 
     proc.once("error", this.emit.bind(this, "error"));
@@ -251,17 +253,19 @@ export default class Process extends EventEmitter {
         proc.kill();
       });
     }
+
+    return proc;
   }
 
   private initHooks() {
-    this.on("stdout_data", (buf) => {
+    this.on("stdout:data", (buf) => {
       if (this.debugStdout) {
         process.stdout.write(buf);
       }
       this.stdout += buf;
     });
 
-    this.on("stderr_data", (buf) => {
+    this.on("stderr:data", (buf) => {
       if (this.debugStderr) {
         process.stderr.write(buf);
       }
@@ -281,25 +285,26 @@ export default class Process extends EventEmitter {
         for (const rule of this.assertions) {
           rule.validate();
         }
-
-        const result = {
-          code: this.code,
-          error: this.error,
-          stderr: this.stderr,
-          stdout: this.stdout,
-        };
-
-        if (this.endCb) {
-          this.endCb(undefined, result);
-        } else {
-          this.emit("complete_success", result);
-        }
       } catch (err) {
         if (this.endCb) {
           this.endCb(err);
         } else {
-          this.emit("complete_error", err);
+          this.emit("complete:error", err);
         }
+        return;
+      }
+
+      const result = {
+        code: this.code,
+        error: this.error,
+        stderr: this.stderr,
+        stdout: this.stdout,
+      };
+
+      if (this.endCb) {
+        this.endCb(undefined, result);
+      } else {
+        this.emit("complete:success", result);
       }
     });
   }

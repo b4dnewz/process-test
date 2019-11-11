@@ -1,7 +1,7 @@
 import * as assert from "assert";
 
-import Process from "./process";
-import {isRegExp} from "./utils";
+import Process from "../process";
+import { isRegExp } from "../utils";
 
 export default class Rule {
 

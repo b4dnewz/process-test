@@ -1,6 +1,6 @@
 import * as path from "path";
 
-import {fork, spawn} from "../src/index";
+import { fork, spawn } from "../src/index";
 import Process from "../src/process";
 
 const fixtures = path.join(__dirname, "fixtures");
@@ -53,10 +53,10 @@ describe("module", () => {
     new Process({
       cmd: path.resolve(fixtures, "stdout-stderr.js"),
       method: "fork",
-    }).end(function(err) {
-        this.expect("stdout", "write to stdout");
-        done();
-      });
+    }).end(function (err) {
+      this.expect("stdout", "write to stdout");
+      done();
+    });
   });
 
   it("should capture stdout", (done) => {
@@ -92,15 +92,15 @@ describe("module", () => {
     new Process({
       cmd: path.resolve(fixtures, "alive.js"),
       method: "fork",
-    }).ready(function(next) {
-        const proc = this;
-        const checkFn = setInterval(() => {
-          if (proc.stdout === "listening") {
-            clearInterval(checkFn);
-            next();
-          }
-        }, 250);
-      })
+    }).ready(function (next) {
+      const proc = this;
+      const checkFn = setInterval(() => {
+        if (proc.stdout === "listening") {
+          clearInterval(checkFn);
+          next();
+        }
+      }, 250);
+    })
       .end(done);
   });
 
@@ -197,17 +197,17 @@ describe("module", () => {
 
     it("should spawn system process", (done) => {
       spawn("node", ["--version"])
-      .expect("stdout", new RegExp(process.version))
-      .expect("code", 0)
-      .end(done);
+        .expect("stdout", new RegExp(process.version))
+        .expect("code", 0)
+        .end(done);
     });
 
     it("should send arguments to spawned process", (done) => {
       const cmd = path.join(fixtures, "argv.js");
       spawn("node", [cmd, fixtures])
-      .expect("stdout", fixtures)
-      .expect("code", 0)
-      .end(done);
+        .expect("stdout", fixtures)
+        .expect("code", 0)
+        .end(done);
     });
   });
 
