@@ -3,7 +3,7 @@ import * as path from "path";
 import { fork, spawn } from "../src/index";
 import Process from "../src/process";
 
-const fixtures = path.join(__dirname, "fixtures");
+const fixtures = path.join(__dirname, "../__fixtures__");
 
 describe("module", () => {
 
