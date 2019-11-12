@@ -87,6 +87,15 @@ describe("module", () => {
     });
   });
 
+  it("should force process timeout", (done) => {
+    new Process({
+      cmd: path.resolve(fixtures, "alive.js"),
+      method: "fork",
+    }).timeout(2500)
+      .expect("error", /timeout/)
+      .end(done);
+  })
+
   it("should exit with error code", (done) => {
     new Process({
       cmd: path.resolve(fixtures, "process-exit.js"),

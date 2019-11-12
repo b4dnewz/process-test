@@ -89,7 +89,16 @@ export default class Process extends EventEmitter {
   private debugStdout: boolean = false;
   private debugStderr: boolean = false;
 
+  /**
+   * An array of prompt objects to respond on stdin
+   */
   private prompts: IPrompt[] = null;
+
+  /**
+   * A timeout number in milliseconds
+   * that will kill the process when excedeed
+   */
+  private executionTimeout: number = null;
 
   /**
    * Process assertion rules map
@@ -187,6 +196,15 @@ export default class Process extends EventEmitter {
   }
 
   /**
+   * Set the process timeout number in milliseconds
+   * when the value is excedeed the process is killed
+   */
+  public timeout(input: number) {
+    this.executionTimeout = input;
+    return this;
+  }
+
+  /**
    * Callback used to determine when a process is ready
    * useful to close keep-alive style process manually
    */
@@ -254,6 +272,16 @@ export default class Process extends EventEmitter {
 
     proc.once("error", this.emit.bind(this, "error"));
     proc.once("close", this.emit.bind(this, "close"));
+
+    // Force execution timeout if necessary
+    if (this.executionTimeout) {
+      setTimeout(() => {
+        if (!proc.killed) {
+          this.error = new Error("Process timeout");
+          proc.kill();
+        }
+      }, this.executionTimeout);
+    }
 
     if (this.prompts) {
       runPrompts(proc, this.prompts);
