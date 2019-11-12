@@ -69,6 +69,10 @@ export default class Process extends EventEmitter {
   private readonly options: ProcessOptions;
 
   private readyCb: ReadyCallback;
+
+  /**
+   * Function to call when the child process has terminated
+   */
   private endCb: ProcessCallback;
 
   /**
@@ -188,6 +192,8 @@ export default class Process extends EventEmitter {
    * the callback is run with results
    * and the context is bound to this
    */
+  public end(): Promise<IProcessResult>;
+  public end(cb?: ProcessCallback): void;
   public end(cb?: ProcessCallback) {
     this.endCb = cb && cb.bind(this);
     if (!cb) {

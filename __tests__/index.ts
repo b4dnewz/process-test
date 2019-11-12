@@ -68,6 +68,14 @@ describe("module", () => {
       .end(done);
   });
 
+  it("should support promises", async () => {
+    const res = await new Process({
+      cmd: path.resolve(fixtures, "stdout-stderr.js"),
+      method: "fork",
+    }).end();
+    expect(res.stdout).toEqual("write to stdout");
+  });
+
   it("should end with result", (done) => {
     new Process({
       cmd: path.resolve(fixtures, "stdout-stderr.js"),
