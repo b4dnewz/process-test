@@ -89,6 +89,8 @@ export default class Process extends EventEmitter {
   private debugStdout: boolean = false;
   private debugStderr: boolean = false;
 
+  private prompts: IPrompt[] = null;
+
   /**
    * An array of prompt objects to respond on stdin
    */
